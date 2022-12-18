@@ -9,12 +9,14 @@
         <div class="main">
             <div class="toolbar">
                 <button id="runInput">Run</button>
+                <button id="upload"><input type="file" id="fileinput"></button>
                 <button id="saveFile">Save</button>
+                <button id="translateButton">Translate</button>
                 <button id="needHelp">Perlu Bantuan?</button>
             </div>
             <div class="sandbox">
                 <div class="leftDiv">
-                    <textarea id="textInput" name="textInput" autocapitalize="off" autocomplete="off" spellcheck="false"></textarea>
+                    <div id="textInput" contenteditable></div>
                 </div>
                 <div class="rightDiv">
                     <iframe id="output" srcdoc=""></iframe>

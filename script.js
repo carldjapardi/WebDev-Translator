@@ -8,21 +8,28 @@ document.addEventListener("DOMContentLoaded", () => {
             $(".helpAbs").css("display","none")
         }
     })
-
-    function translate(input) {
-        //let inputLine = input.split(/\r?\n/)
-        let transMap = {"<t>":"<a>","</t>":"</a>","<artikel>":"<article>","</artikel>":"</article>","<suara>":"<audio>","</suara>":"</audio>","<tebal>":"<b>","</tebal>":"</b>","<badan>":"<body>","</badan>":"</body>","<jb>":"<br>","</jb>":"</br>","<tombol>":"<button>","</tombol>":"</button>","<miring>":"<em>","</miring>":"</em>","<j1>":"<h1>","</j1>":"</h1>","<j2>":"<h2>","</j2>":"</h2>","<j3>":"<h3>","</j3>":"</h3>","<j4>":"<h4>","</j4>":"</h4>","<j5>":"<h5>","</j5>":"</h5>","<j6>":"<h6>","</j6>":"</h6>","<kepala>":"<head>","</kepala>":"</head>","<garis>":"<hr>","</garis>":"</hr>","<gambar>":"<img>","</gambar>":"</img>","<masuk>":"<input>","</masuk>":"</input>","<hubung>":"<link>","</hubung>":"</link>","<pilih>":"<select>","</pilih>":"</select>","<gaya>":"<style>","</gaya>":"</style>","<areateks>":"<textarea>","</areateks>":"</textarea>","<namaSitus>":"<title>","</namaSitus>":"</title>","<ut>":"<ul>","</ut>":"</ul>","<un>":"<ol>","</un>":"</ol>"};   
-        let transKey = Object.keys(transMap)
-        transKey.forEach((key)=>{
-            input = input.replaceAll(key, transMap[key])
-        })
-        return input
-    } 
+    
+    //upload files
+    document.getElementById('fileinput').addEventListener('change', (file) => {
+        let f = file.target.files[0];
+        if (f) {
+            let r = new FileReader();
+            r.onload = (e) => {
+                let contents = e.target.result
+                contents = contents.split(/\r?\n/).join("<br>")
+                $("#textInput").html(codeHTML(contents,decode=false))
+                console.log($("#textInput").html())
+            }
+            r.readAsText(f);
+        } else {
+            alert("Tolong seleksi 1 file");
+        }
+    });
 
     $("#saveFile").click(()=>{
         let filename = "index.html"
-        let data = translate($("#textInput").val())
-        let type = "text/plain"
+        let data = codeHTML(translate($("#textInput").html(), runOnly=true))
+        let type = "html"
         let file = new Blob([data], {type: type});
         // for internet explorer
         if (window.navigator.msSaveOrOpenBlob) window.navigator.msSaveOrOpenBlob(file, filename);
@@ -39,69 +46,78 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 0); 
         }
     })
-    $("#textInput").html("<!DOCTYPE html>&#10;<html>&#10;    <badan>&#10;&#10;    <j1> Judul </j1>&#10;&#10;    </badan>&#10;</html>")
-    $("#runInput").click(() => $("#output").attr("srcdoc", translate($("#textInput").val())));
-    //tab function
-    $(function(){$("#textInput").keydown(function(t){if(13===t.keyCode&&this.selectionStart==this.selectionEnd){let e=this.selectionStart,s=$(this).val();for(;e>0&&"\n"!=s[e-1];)e--;let i=e;for(;" "==s[e]||"	"==s[e];)e++;if(e>i)return document.execCommand("insertText",!1,"\n"+s.substr(i,e-i)),this.blur(),this.focus(),!1}if(9===t.keyCode){if(this.selectionStart==this.selectionEnd){if(t.shiftKey){let n=this.value;this.selectionStart>0&&"	"==n[this.selectionStart-1]&&document.execCommand("delete")}else document.execCommand("insertText",!1,"	")}else{let l=this.selectionStart,r=this.selectionEnd,o=$(this).val();for(;l>0&&"\n"!=o[l-1];)l--;for(;r>0&&"\n"!=o[r-1]&&r<o.length;)r++;let h=o.substr(l,r-l).split("\n");for(let a=0;a<h.length;a++)(a!=h.length-1||0!=h[a].length)&&(t.shiftKey?h[a].startsWith("	")?h[a]=h[a].substr(1):h[a].startsWith("    ")&&(h[a]=h[a].substr(4)):h[a]="	"+h[a]);h=h.join("\n"),this.value=o.substr(0,l)+h+o.substr(r),this.selectionStart=l,this.selectionEnd=l+h.length}return!1}return!0})});
-})
-/*
-$(function() {
-    $("textarea.tabSupport").keydown(function(e) {
-        if (e.keyCode === 13) {
-        if (this.selectionStart == this.selectionEnd) {
-            let sel = this.selectionStart;
-            let text = $(this).val();
-            while (sel > 0 && text[sel - 1] != '\n')
-            sel--;
-            let lineStart = sel;
-            while (text[sel] == ' ' || text[sel] == '\t')
-            sel++;
-            if (sel > lineStart) {
-            document.execCommand('insertText', false, "\n" + text.substr(lineStart, sel - lineStart));
-            this.blur();
-            this.focus();
-            return false;
-            }
-        }
-        }
-        if (e.keyCode === 9) {
-        if (this.selectionStart == this.selectionEnd) {
-            if (!e.shiftKey) {
-            document.execCommand('insertText', false, "\t");
-            } else {
-            let text = this.value;
-            if (this.selectionStart > 0 && text[this.selectionStart - 1] == '\t') {
-                document.execCommand('delete');
-            }
-            }
+
+    //used for turning html entities, inside div, to string; to run in iframe
+    function codeHTML(input, decode=true) {
+        if (decode === true) {
+            let doc = new DOMParser().parseFromString(input, "text/html")
+            return doc.documentElement.textContent;
         } else {
-            let selStart = this.selectionStart;
-            let selEnd = this.selectionEnd;
-            let text = $(this).val();
-            while (selStart > 0 && text[selStart - 1] != '\n')
-            selStart--;
-            while (selEnd > 0 && text[selEnd - 1] != '\n' && selEnd < text.length)
-            selEnd++;
-            let lines = text.substr(selStart, selEnd - selStart).split('\n');
-            for (let i = 0; i < lines.length; i++) {
-            if (i == lines.length - 1 && lines[i].length == 0)
-                continue;
-            if (e.shiftKey) {
-                if (lines[i].startsWith('\t'))
-                lines[i] = lines[i].substr(1);
-                else if (lines[i].startsWith("    "))
-                lines[i] = lines[i].substr(4);
-            } else
-                lines[i] = "\t" + lines[i];
+            //if <br> present in code, for uploading file function
+            if (input.search("<br>") !== -1) {
+                input = input.split("<br>")
+                let formattedInput = []
+                for (let i = 0; i<input.length ;i++) {
+                    formattedInput[i] = input[i].replace(/[\u00A0-\u9999<>\&]/g, (t) => {return '&#'+t.charCodeAt(0)+';'})
+                }
+                console.log(formattedInput)
+                return formattedInput.join("<br>")
             }
-            lines = lines.join('\n');
-            this.value = text.substr(0, selStart) + lines + text.substr(selEnd);
-            this.selectionStart = selStart;
-            this.selectionEnd = selStart + lines.length;
+            input = input.replace(/[\u00A0-\u9999<>\&]/g, function(t) {return '&#'+t.charCodeAt(0)+';'})
+            return input
         }
-        return false;
+    }
+
+    function translate(input, runOnly=false) {
+        //let transMap = {"<t>":"<a>","</t>":"</a>","<artikel>":"<article>","</artikel>":"</article>","<suara>":"<audio>","</suara>":"</audio>","<tebal>":"<b>","</tebal>":"</b>","<badan>":"<body>","</badan>":"</body>","<jb>":"<br>","</jb>":"</br>","<tombol>":"<button>","</tombol>":"</button>","<miring>":"<em>","</miring>":"</em>","<j1>":"<h1>","</j1>":"</h1>","<j2>":"<h2>","</j2>":"</h2>","<j3>":"<h3>","</j3>":"</h3>","<j4>":"<h4>","</j4>":"</h4>","<j5>":"<h5>","</j5>":"</h5>","<j6>":"<h6>","</j6>":"</h6>","<kepala>":"<head>","</kepala>":"</head>","<garis>":"<hr>","</garis>":"</hr>","<gambar>":"<img>","</gambar>":"</img>","<masuk>":"<input>","</masuk>":"</input>","<hubung>":"<link>","</hubung>":"</link>","<pilih>":"<select>","</pilih>":"</select>","<gaya>":"<style>","</gaya>":"</style>","<areateks>":"<textarea>","</areateks>":"</textarea>","<namaSitus>":"<title>","</namaSitus>":"</title>","<ut>":"<ul>","</ut>":"</ul>","<un>":"<ol>","</un>":"</ol>"};   
+        let transMap = {'&lt;artikel': '&lt;article', '&lt;/artikel&gt;': '&lt;/article&gt;', '&lt;suara': '&lt;audio', '&lt;/suara&gt;': '&lt;/audio&gt;', '&lt;badan': '&lt;body', '&lt;/badan&gt;': '&lt;/body&gt;', '&lt;jb': '&lt;br', '&lt;/jb&gt;': '&lt;/br&gt;', '&lt;tombol': '&lt;button', '&lt;/tombol&gt;': '&lt;/button&gt;', '&lt;miring': '&lt;em', '&lt;/miring&gt;': '&lt;/em&gt;', '&lt;j1': '&lt;h1', '&lt;/j1&gt;': '&lt;/h1&gt;', '&lt;j2': '&lt;h2', '&lt;/j2&gt;': '&lt;/h2&gt;', '&lt;j3': '&lt;h3', '&lt;/j3&gt;': '&lt;/h3&gt;', '&lt;j4': '&lt;h4', '&lt;/j4&gt;': '&lt;/h4&gt;', '&lt;j5': '&lt;h5', '&lt;/j5&gt;': '&lt;/h5&gt;', '&lt;j6': '&lt;h6', '&lt;/j6&gt;': '&lt;/h6&gt;', '&lt;kepala': '&lt;head', '&lt;/kepala&gt;': '&lt;/head&gt;', '&lt;garis': '&lt;hr', '&lt;/garis&gt;': '&lt;/hr&gt;', '&lt;gambar': '&lt;img', '&lt;/gambar&gt;': '&lt;/img&gt;', '&lt;masuk': '&lt;input', '&lt;/masuk&gt;': '&lt;/input&gt;', '&lt;hubung': '&lt;link', '&lt;/hubung&gt;': '&lt;/link&gt;', '&lt;pilih': '&lt;select', '&lt;/pilih&gt;': '&lt;/select&gt;', '&lt;gaya': '&lt;style', '&lt;/gaya&gt;': '&lt;/style&gt;', '&lt;areateks': '&lt;textarea', '&lt;/areateks&gt;': '&lt;/textarea&gt;', '&lt;namaSitus': '&lt;title', '&lt;/namaSitus&gt;': '&lt;/title&gt;', '&lt;ut': '&lt;ul', '&lt;/ut&gt;': '&lt;/ul&gt;', '&lt;un': '&lt;ol', '&lt;/un&gt;': '&lt;/ol&gt;'}
+        let transKey = Object.keys(transMap)
+        if (runOnly===true) {
+            transKey.forEach((key)=>{input = input.replaceAll(key, transMap[key])})
+            return input.replaceAll(/\s/g, '').replaceAll("&nbsp;","")
+        }
+        //if not run; determine language
+        let language = ""
+        for (let i = 0; i < transKey.length; i++) { 
+            if (input.search(transKey[i]) !== -1) {
+                language = "bahasa"
+                break
+            } else {
+                language = "english"
+            }
+        }
+        if (language==="bahasa") {
+            transKey.forEach((key)=>{
+                input = input.replaceAll(key, transMap[key])
+            })
+            return input
+        } else {
+            transKey.forEach((key)=>{input = input.replaceAll(transMap[key], key)})
+            return input
+        } 
+    } 
+
+    $("#translateButton").click(()=>{
+        //console.log(document.getElementById("textInput").innerHTML)
+        $("#textInput").html(translate($("#textInput").html()))
+    })
+
+    //initializing textInput
+    $("#textInput").html("&lt;!DOCTYPE html&gt;<br>&lt;html&gt;<br><br>&emsp;&emsp;&lt;kepala&gt;<br>&emsp;&emsp;&emsp;&emsp;&lt;namaSitus&gt; (Nama) &lt;/namaSitus&gt;<br>&emsp;&emsp;&emsp;&emsp;&lt;gaya&gt;<br><br>&emsp;&emsp;&emsp;&emsp;&lt;/gaya&gt;<br>&emsp;&emsp;&lt;/kepala&gt;<br><br>&emsp;&emsp;&lt;badan&gt;<br><br>&emsp;&emsp;&emsp;&emsp;&lt;j1&gt; Judul &lt;/j1&gt;<br>&emsp;&emsp;&emsp;&emsp;&lt;p&gt; Kata Kata &lt;/p&gt;<br><br>&emsp;&emsp;&lt;/badan&gt;<br><br>&lt;/html&gt;")
+    
+    $("#runInput").click(() => 
+        {
+            $("#output").attr("srcdoc", codeHTML(translate($("#textInput").html(), runOnly=true)), decode=false)
+            console.log(translate($("#textInput").html(), runOnly=true))
+        }
+    )
+    
+    //tab function
+    $("#textInput").keydown((e) => {
+        if(e.keyCode === 9) {
+            document.execCommand('insertText', false, "  ");
+            return false;
         }
         return true;
     });
-    });
-    */
+})
