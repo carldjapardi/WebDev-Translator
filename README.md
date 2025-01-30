@@ -1,5 +1,7 @@
-# webDevAid
-  - What: A website development tool for indonesia students that are facing diffuclties in typing/see-ing/remembering.
-  - What: Features include: online html+css+js interpreter; save function into HardDrive
-  - How: Along side translating common tags and css keywords into the indonesian equivalent, it also provides a cheatsheet to show the translation.
-  - Why: To aid disabled and non-english speakers learn web development.
+# WebDev-Translator
+A website development tool for Indonesian students that are facing diffuclties in understanding English terms during web development.
+
+**Features**
+- HTML/CSS/JS Interpreter: Access and switch between a curated list of common web development terms with their English and Indonesian translations.
+- Save code written into memory
+- User-Friendly Interface: Navigate through translations with ease, with a clean and intuitive design.
